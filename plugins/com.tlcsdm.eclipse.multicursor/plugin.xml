@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+ <extension
+         point="org.eclipse.ui.commands">
+      <category
+            name="Multiple Cursor Category"
+            id="com.tlcsdm.eclipse.multicursor.commands.category">
+      </category>
+      <command
+            name="Multiple Cursor"
+            categoryId="com.tlcsdm.eclipse.multicursor.commands.category"
+            id="com.tlcsdm.eclipse.multicursor.commands.multipleCursorCommand">
+      </command>
+      <command
+            categoryId="com.tlcsdm.eclipse.multicursor.commands.category"
+            id="com.tlcsdm.eclipse.multicursor.commands.selectAllCommand"
+            name="Multiple Cursor Select All">
+      </command>
+      <command
+            categoryId="com.tlcsdm.eclipse.multicursor.commands.category"
+            id="com.tlcsdm.eclipse.multicursor.commands.selectNextCommandand"
+            name="Multiple Cursor Select Next">
+      </command>
+      <command
+            categoryId="com.tlcsdm.eclipse.multicursor.commands.category"
+            id="com.tlcsdm.eclipse.multicursor.commands.selectRemainingCommandand"
+            name="Multiple Cursor Select Remaining">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            commandId="com.tlcsdm.eclipse.multicursor.commands.multipleCursorCommand"
+            class="com.tlcsdm.eclipse.multicursor.handlers.MultipleCursorHandler">
+      </handler>
+      <handler
+            class="com.tlcsdm.eclipse.multicursor.handlers.SelectAllOccurrencesHandler"
+            commandId="com.tlcsdm.eclipse.multicursor.commands.selectAllCommand">
+      </handler>
+      <handler
+            class="com.tlcsdm.eclipse.multicursor.handlers.SelectNextOccurrenceHandler"
+            commandId="com.tlcsdm.eclipse.multicursor.commands.selectNextCommandand">
+      </handler>
+      <handler
+            class="com.tlcsdm.eclipse.multicursor.handlers.SelectRemainingOccurrencesHandler"
+            commandId="com.tlcsdm.eclipse.multicursor.commands.selectRemainingCommandand">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="com.tlcsdm.eclipse.multicursor.commands.multipleCursorCommand"
+            contextId="org.eclipse.ui.textEditorScope"
+            sequence="M1+M3+V"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+      <key
+            commandId="com.tlcsdm.eclipse.multicursor.commands.selectAllCommand"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M3+F">
+      </key>
+      <key
+            commandId="com.tlcsdm.eclipse.multicursor.commands.selectNextCommandand"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M3+D">
+      </key>
+      <key
+            commandId="com.tlcsdm.eclipse.multicursor.commands.selectRemainingCommandand"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M3+N">
+      </key>
+   </extension>
+
+</plugin>
