@@ -4,6 +4,8 @@ An aborted attempt to provide Sublime-Text-like multi cursor support for text ed
 
 Fork of [eclipse-multicursor](https://github.com/caspark/eclipse-multicursor) on Github
 
+Now Support Eclipse 2024-06 and later, Mac OS X, Linux (with nautilus) and Windows.
+
 ## Use
 - **Select All Same Words (All):** `Ctrl+Alt+F`  
   (Place the cursor on a word and press the shortcut to select all occurrences. Then type to change them.  
