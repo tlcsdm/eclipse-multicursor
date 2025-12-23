@@ -295,8 +295,8 @@ version(s), and exceptions or additional permissions here}.&quot;
    </license>
 
    <url>
-      <update label="%updateSiteName" url="https://raw.githubusercontent.com/tlcsdm/eclipse-multicursor/master/update_site/"/>
-      <discovery label="Multi Cursor Update Site" url="https://raw.githubusercontent.com/tlcsdm/eclipse-multicursor/master/update_site/"/>
+      <update label="%updateSiteName" url="https://raw.githubusercontent.com/tlcsdm/eclipse-multicursor/update_site/"/>
+      <discovery label="Multi Cursor Update Site" url="https://raw.githubusercontent.com/tlcsdm/eclipse-multicursor/update_site/"/>
    </url>
 
    <requires>
