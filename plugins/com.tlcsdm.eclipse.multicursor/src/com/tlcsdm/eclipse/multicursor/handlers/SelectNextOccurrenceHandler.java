@@ -127,6 +127,8 @@ public class SelectNextOccurrenceHandler extends AbstractHandlerWithState {
 	 * Adds the matching region to selections and attempts to find the next
 	 * occurrence when this is the first selection (to ensure at least 2
 	 * selections for meaningful linked editing).
+	 *
+	 * @throws BadLocationException if offset or length are invalid in the document
 	 */
 	private void addSelectionAndNext(Set<IRegion> selections, IRegion matchingRegion, IDocument document,
 			Point selectedRange, String searchText) throws BadLocationException {
