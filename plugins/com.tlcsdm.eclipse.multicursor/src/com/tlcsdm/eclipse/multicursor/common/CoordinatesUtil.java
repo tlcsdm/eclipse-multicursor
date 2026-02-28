@@ -7,6 +7,10 @@ import org.eclipse.swt.graphics.Point;
  * caspark</a>
  */
 public class CoordinatesUtil {
+
+	private CoordinatesUtil() {
+	}
+
 	/**
 	 * Converts offset and (possibly negative) length to absolute start and end
 	 * positions.

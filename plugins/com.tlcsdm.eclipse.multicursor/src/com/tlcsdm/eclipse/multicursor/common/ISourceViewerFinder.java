@@ -14,14 +14,16 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
  */
 public class ISourceViewerFinder {
 
+	private ISourceViewerFinder() {
+	}
+
 	public static ISourceViewer fromEditorPart(IEditorPart editorPart) {
 		Object activeEditor = editorPart;
-		if (editorPart instanceof MultiPageEditorPart) {
-			MultiPageEditorPart multiPageEditorPart = (MultiPageEditorPart) editorPart;
+		if (editorPart instanceof MultiPageEditorPart multiPageEditorPart) {
 			activeEditor = multiPageEditorPart.getSelectedPage();
 		}
-		if (activeEditor instanceof AbstractTextEditor) {
-			return fromAbstractTextEditor((AbstractTextEditor) activeEditor);
+		if (activeEditor instanceof AbstractTextEditor textEditor) {
+			return fromAbstractTextEditor(textEditor);
 		} else {
 			return null;
 		}
@@ -43,11 +45,10 @@ public class ISourceViewerFinder {
 				}
 			}
 			if (getSourceViewerMethod == null) {
-				throw new RuntimeException();
+				throw new NoSuchMethodException("getSourceViewer method not found in class hierarchy");
 			}
 			getSourceViewerMethod.setAccessible(true);
-			ISourceViewer result = (ISourceViewer) getSourceViewerMethod.invoke(editor);
-			return result;
+			return (ISourceViewer) getSourceViewerMethod.invoke(editor);
 		} catch (Exception e) {
 			return null;
 		}

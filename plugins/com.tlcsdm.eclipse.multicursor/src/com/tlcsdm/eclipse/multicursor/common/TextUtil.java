@@ -10,6 +10,10 @@ import org.eclipse.swt.graphics.Point;
  * caspark</a>
  */
 public class TextUtil {
+
+	private TextUtil() {
+	}
+
 	private static final Pattern WORD_RE = Pattern.compile("\\w+");
 
 	/**
