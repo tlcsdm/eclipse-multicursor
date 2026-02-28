@@ -7,6 +7,9 @@ import org.eclipse.core.commands.AbstractHandlerWithState;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.State;
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
@@ -22,6 +25,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
+import com.tlcsdm.eclipse.multicursor.Activator;
 import com.tlcsdm.eclipse.multicursor.common.CoordinatesUtil;
 import com.tlcsdm.eclipse.multicursor.common.DeleteBlockingExitPolicy;
 import com.tlcsdm.eclipse.multicursor.common.ISourceViewerFinder;
@@ -32,6 +36,7 @@ import com.tlcsdm.eclipse.multicursor.common.TextUtil;
  * caspark</a>
  */
 public class SelectNextOccurrenceHandler extends AbstractHandlerWithState {
+	private static final ILog LOG = ILog.of(SelectNextOccurrenceHandler.class);
 	private static final String ID_SELECTS_IN_PROGRESS = "SELECTS_IN_PROGRESS";
 
 	private static final class SelectInProgress {
@@ -95,49 +100,48 @@ public class SelectNextOccurrenceHandler extends AbstractHandlerWithState {
 				selections = currentState.existingSelections;
 				IRegion matchingRegion = findReplaceAdaptor(document, currentState.nextOffset, searchText);
 				if (matchingRegion != null && !selections.contains(matchingRegion)) {
-					selections.add(matchingRegion);
-					saveCurrentState(new SelectInProgress(selectedRange, searchText, selections,
-							matchingRegion.getOffset() + matchingRegion.getLength()));
-					if (selections.size() == 1) {
-						IRegion nextRegion = findReplaceAdaptor(document,
-								matchingRegion.getOffset() + matchingRegion.getLength(), searchText);
-						if (nextRegion != null && !selections.contains(nextRegion)) {
-							selections.add(nextRegion);
-							saveCurrentState(new SelectInProgress(selectedRange, searchText, selections,
-									nextRegion.getOffset() + nextRegion.getLength()));
-						}
-					}
+					addSelectionAndNext(selections, matchingRegion, document, selectedRange, searchText);
 				} else {
 					IRegion againMatchingRegion = findReplaceAdaptor(document, 0, searchText);
-					if (againMatchingRegion != null && !selections.contains(matchingRegion)) {
+					if (againMatchingRegion != null && !selections.contains(againMatchingRegion)) {
 						selections.add(againMatchingRegion);
 						saveCurrentState(new SelectInProgress(selectedRange, searchText, selections,
 								againMatchingRegion.getOffset() + againMatchingRegion.getLength()));
 					}
 				}
 			} else {
-				selections = new HashSet<IRegion>();
+				selections = new HashSet<>();
 				IRegion matchingRegion = findReplaceAdaptor(document, candidateSearchOffset, searchText);
 				if (matchingRegion != null && !selections.contains(matchingRegion)) {
-					selections.add(matchingRegion);
-					saveCurrentState(new SelectInProgress(selectedRange, searchText, selections,
-							matchingRegion.getOffset() + matchingRegion.getLength()));
-					if (selections.size() == 1) {
-						IRegion nextRegion = findReplaceAdaptor(document,
-								matchingRegion.getOffset() + matchingRegion.getLength(), searchText);
-						if (nextRegion != null && !selections.contains(nextRegion)) {
-							selections.add(nextRegion);
-							saveCurrentState(new SelectInProgress(selectedRange, searchText, selections,
-									nextRegion.getOffset() + nextRegion.getLength()));
-						}
-					}
+					addSelectionAndNext(selections, matchingRegion, document, selectedRange, searchText);
 				}
 			}
 			startLinkedEdit(selections, viewer, selectedRange);
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Failed to start editing", e));
 		}
 
+	}
+
+	/**
+	 * Adds the matching region to selections and attempts to find the next
+	 * occurrence when this is the first selection (to ensure at least 2
+	 * selections for meaningful linked editing).
+	 */
+	private void addSelectionAndNext(Set<IRegion> selections, IRegion matchingRegion, IDocument document,
+			Point selectedRange, String searchText) throws BadLocationException {
+		selections.add(matchingRegion);
+		saveCurrentState(new SelectInProgress(selectedRange, searchText, selections,
+				matchingRegion.getOffset() + matchingRegion.getLength()));
+		if (selections.size() == 1) {
+			IRegion nextRegion = findReplaceAdaptor(document,
+					matchingRegion.getOffset() + matchingRegion.getLength(), searchText);
+			if (nextRegion != null && !selections.contains(nextRegion)) {
+				selections.add(nextRegion);
+				saveCurrentState(new SelectInProgress(selectedRange, searchText, selections,
+						nextRegion.getOffset() + nextRegion.getLength()));
+			}
+		}
 	}
 
 	/**
@@ -149,11 +153,10 @@ public class SelectNextOccurrenceHandler extends AbstractHandlerWithState {
 	 * @return
 	 * @throws BadLocationException
 	 */
-	public IRegion findReplaceAdaptor(IDocument document, int startOffset, String searchText)
+	private IRegion findReplaceAdaptor(IDocument document, int startOffset, String searchText)
 			throws BadLocationException {
 		FindReplaceDocumentAdapter findReplaceAdaptor = new FindReplaceDocumentAdapter(document);
-		IRegion matchingRegion = findReplaceAdaptor.find(startOffset, searchText, true, true, false, false);
-		return matchingRegion;
+		return findReplaceAdaptor.find(startOffset, searchText, true, true, false, false);
 	}
 
 	// Reference: RenameLinkedMode class shows how linked mode is meant to be

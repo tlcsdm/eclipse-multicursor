@@ -7,6 +7,9 @@ import org.eclipse.core.commands.AbstractHandlerWithState;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.State;
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
@@ -24,6 +27,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
+import com.tlcsdm.eclipse.multicursor.Activator;
 import com.tlcsdm.eclipse.multicursor.common.DeleteBlockingExitPolicy;
 import com.tlcsdm.eclipse.multicursor.common.ISourceViewerFinder;
 
@@ -34,14 +38,18 @@ import com.tlcsdm.eclipse.multicursor.common.ISourceViewerFinder;
  *
  */
 public class MultipleCursorHandler extends AbstractHandlerWithState {
+	private static final ILog LOG = ILog.of(MultipleCursorHandler.class);
 	private static final String PERSPECTIVE_LISTENER_FLAG = "perspectiveListenerFlag";
 	/** 存放用户记录的位置 */
-	private Set<LinkedPosition> positions = new HashSet<LinkedPosition>();
+	private final Set<LinkedPosition> positions = new HashSet<>();
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IEditorPart editor = HandlerUtil.getActiveEditorChecked(event);
 		ISourceViewer sourceViewer = ISourceViewerFinder.fromEditorPart(editor);
+		if (sourceViewer == null) {
+			return null;
+		}
 		Point point = sourceViewer.getSelectedRange();
 		IDocument document = sourceViewer.getDocument();
 		if (getListenerFlag() == null) {
@@ -73,7 +81,7 @@ public class MultipleCursorHandler extends AbstractHandlerWithState {
 		try {
 			linkPosition(sourceViewer, positions, point);
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Failed to link positions", e));
 		}
 		return null;
 	}
@@ -86,17 +94,18 @@ public class MultipleCursorHandler extends AbstractHandlerWithState {
 	 * @param selectPoint
 	 * @throws Exception
 	 */
-	public void linkPosition(ITextViewer viewer, Set<LinkedPosition> ps, Point selectPoint) throws Exception {
-		if (ps == null) {
+	private void linkPosition(ITextViewer viewer, Set<LinkedPosition> linkedPositions, Point selectPoint)
+			throws Exception {
+		if (linkedPositions == null) {
 			return;
 		}
-		LinkedPositionGroup pGroup = new LinkedPositionGroup();
-		for (LinkedPosition p : ps) {
-			pGroup.addPosition(p);
+		LinkedPositionGroup group = new LinkedPositionGroup();
+		for (LinkedPosition position : linkedPositions) {
+			group.addPosition(position);
 		}
 
 		LinkedModeModel model = new LinkedModeModel();
-		model.addGroup(pGroup);
+		model.addGroup(group);
 		model.forceInstall();
 		LinkedModeUI ui = new EditorLinkedModeUI(model, viewer);
 		ui.setExitPolicy(new DeleteBlockingExitPolicy(viewer.getDocument()));
